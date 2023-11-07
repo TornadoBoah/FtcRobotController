@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Call_Upon_Classes;
 
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -8,41 +8,50 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class DistanceSensor {
     private Rev2mDistanceSensor ds = null;
+    private Rev2mDistanceSensor dso = null;
     public double distance = 0;
     public boolean found = false;
     public double idealdistance = 6;
     public boolean allignedTOp = false;
     public double pxlcount = 0;
+    public double pxlmax= 2;
 
 
     public void initDistance(HardwareMap hardwareMap, String name) {
-        ds = hardwareMap.get(Rev2mDistanceSensor.class,"ds");
+        ds = hardwareMap.get(Rev2mDistanceSensor.class,name);
     }
-    public void rundistanceTeleop(Telemetry telemetry){
-        if(ds.getDistance(DistanceUnit.INCH) <= idealdistance){
+    public void rundistanceTeleop(Telemetry telemetry) {
+        if (ds.getDistance(DistanceUnit.INCH) <= idealdistance) {
             allignedTOp = true;
-        }else{
+            if ((pxlcount < pxlmax) && (!found)) {
+                pxlcount += 1;
+                found = true;
+                if (dso.getDistance(DistanceUnit.INCH) <= idealdistance) {
+                    allignedTOp = true;
+                    if ((pxlcount < pxlmax) && (!found)) {
+                        pxlcount -= 1;
+                    }
+            }
+        } else {
+            found = false;
             allignedTOp = false;
         }
+
+            }
         get_Telemetry(telemetry);
-    }
-    public double getDistance(Telemetry telemetry) {
-        distance = ds.getDistance(DistanceUnit.INCH);
-        if (distance > 2) {
-            found = true;
-            pxlcount ++;
-        }
-        get_Telemetry(telemetry);
-        if (pxlcount > 2) {
+
+        if (pxlcount >= pxlmax) {
             pxlcount = 2;
         }
-        return distance;
     }
 
+    public double getPxlcount() {
+            return pxlcount;
+    }
 
-
-
-
+    public boolean isFound() {
+        return found;
+    }
 
     public void get_Telemetry (Telemetry telemetry) {
         telemetry.addData("Distance", ds.getDistance(DistanceUnit.INCH));
@@ -50,9 +59,6 @@ public class DistanceSensor {
         telemetry.addData("pxlcount", pxlcount);
     }
 
-    public boolean found() {
-        return found;
-    }
     public double ds() {
         return distance;
     }
